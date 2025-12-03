@@ -1,0 +1,45 @@
+name: Bump requirements.txt  # bump requirements.txt (to force reinstall in space), run tests, push to HF hub
+
+on:
+  schedule:
+    - cron: '0 05 * * *'   # daily at 05:00 UTC
+  workflow_dispatch:
+
+jobs:
+  update-and-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_TOKEN }}
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Add timestamp 
+        run: |
+          python - <<'PY'
+          import datetime
+          with open("requirements.txt", "r", encoding="utf-8") as f:
+              req_content = f.read()
+          lines = [line for line in req_content.splitlines() if not line.startswith("# bumped:")]
+          ts = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+          lines.append(f"# bumped: {ts}")
+          new_req = "\n".join(lines) + "\n"
+          with open("requirements.txt", "w", encoding="utf-8") as f:
+              f.write(new_req)
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add requirements.txt
+          git commit -m "ci: bump timestamp to trigger deps reinstall"
+          git push origin HEAD:main
+      - name: Install requirements
+        run: pip install -r requirements.txt
+      - name: Run test
+        run: python -m pytest test_optimum_support.py
+      - name: Push to hub
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: git push https://helenai:$HF_TOKEN@huggingface.co/spaces/helenai/check-optimum-intel-support main
