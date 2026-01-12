@@ -2,4 +2,4 @@
 optimum-intel[tests,openvino,diffusers]@git+https://github.com/huggingface/optimum-intel
 packaging
 huggingface-hub
-# bumped: 2026-01-11T05:27:01Z
+# bumped: 2026-01-12T05:31:15Z
