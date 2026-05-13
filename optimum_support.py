@@ -35,6 +35,13 @@ SUPPORTED_DIFFUSION_CLASSES = [
 
 
 def get_supported_models_for_version(version):
+    import transformers
+
+    # When faking an older transformers version, ensure removed classes are still importable.
+    # AutoModelForVision2Seq was removed in transformers 5.0 (replaced by AutoModelForImageTextToText).
+    if not hasattr(transformers, "AutoModelForVision2Seq") and hasattr(transformers, "AutoModelForImageTextToText"):
+        transformers.AutoModelForVision2Seq = transformers.AutoModelForImageTextToText
+
     import_utils._transformers_version = version
     test_seq2seq._transformers_version = version
     test_modeling._transformers_version = version
@@ -64,9 +71,14 @@ def get_supported_models_for_version(version):
 def get_min_max_transformers():
     meta = importlib.metadata.metadata("optimum-intel")
     requires = meta.get_all("Requires-Dist") or []
-    transformers_versions = [item for item in requires if "transformers" in item and "extra" not in item][0]
+    transformers_versions = [item for item in requires if item.startswith("transformers") and "extra" not in item][0]
     req = Requirement(transformers_versions)
-    maxver, minver = [ver.version for ver in list(req.specifier)]
+    minver = maxver = None
+    for spec in req.specifier:
+        if spec.operator in (">=", ">"):
+            minver = spec.version
+        elif spec.operator in ("<", "<="):
+            maxver = spec.version
     return (minver, maxver)
 
 

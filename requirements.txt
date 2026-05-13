@@ -1,5 +1,5 @@
 --extra-index-url "https://download.pytorch.org/whl/cpu"
-optimum-intel[tests,openvino,diffusers]@git+https://github.com/huggingface/optimum-intel
+optimum-intel[tests,diffusers]@git+https://github.com/huggingface/optimum-intel
 packaging
 huggingface-hub
 # bumped: 2026-05-13T07:49:35Z

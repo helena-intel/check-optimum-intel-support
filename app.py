@@ -3,7 +3,7 @@ import gradio as gr
 from optimum_support import show_is_supported
 
 with gr.Blocks() as app:
-    gr.Markdown("# Check if model is supported by optimum-intel[openvino]")
+    gr.Markdown("# Check if model is supported by optimum-intel")
     with gr.Column():
         model_id = gr.Textbox(label="model_id")
         process_button = gr.Button("Check")
