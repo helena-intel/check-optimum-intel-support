@@ -2,4 +2,4 @@
 optimum-intel[tests,diffusers]@git+https://github.com/huggingface/optimum-intel
 packaging
 huggingface-hub
-# bumped: 2026-07-25T07:17:56Z
+# bumped: 2026-07-26T07:35:39Z
