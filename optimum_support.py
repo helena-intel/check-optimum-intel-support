@@ -42,6 +42,14 @@ def get_supported_models_for_version(version):
     if not hasattr(transformers, "AutoModelForVision2Seq") and hasattr(transformers, "AutoModelForImageTextToText"):
         transformers.AutoModelForVision2Seq = transformers.AutoModelForImageTextToText
 
+    # load_video moved from transformers.image_utils to transformers.video_utils in transformers 5.
+    import transformers.image_utils as _image_utils
+
+    if not hasattr(_image_utils, "load_video"):
+        from transformers.video_utils import load_video
+
+        _image_utils.load_video = load_video
+
     import_utils._transformers_version = version
     test_seq2seq._transformers_version = version
     test_modeling._transformers_version = version
@@ -61,7 +69,10 @@ def get_supported_models_for_version(version):
                 if re.match(r"(OVModelFor.*IntegrationTest)", name) or re.match(r"(OVPipelineFor.*Test)", name):
                     task = name.replace("IntegrationTest", "").replace("Test", "")
                     if "CustomTasks" not in task:
-                        d[task] = obj.SUPPORTED_ARCHITECTURES
+                        if hasattr(obj, "SUPPORTED_ARCHITECTURES"):
+                            d[task] = list(obj.SUPPORTED_ARCHITECTURES)
+                            # SSM/hybrid architectures are listed separately in newer optimum-intel
+                            d[task] += list(getattr(obj, "SUPPORTED_SSM_ARCHITECTURES", []))
     all_archs = []
     for archs in d.values():
         all_archs += archs
